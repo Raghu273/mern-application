@@ -1,0 +1,52 @@
+name: MERN CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev-feature  # Trigger on push to the dev-feature branch
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+jobs:
+  build-deploy:
+    name: Build and Deploy MERN App Locally
+    runs-on: self-hosted  # Use the self-hosted runner
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Step 3: Install Backend Dependencies
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      # Step 4: Install Frontend Dependencies
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      # Step 5: Build Frontend
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      # Step 6: Start Backend Server
+      - name: Start Backend Server
+        working-directory: ./backend
+        run: |
+          npm install -g pm2
+          pm2 start app.js --name mern-backend
+
+      # Step 7: Serve Frontend Locally
+      - name: Serve Frontend Locally
+        working-directory: ./frontend
+        run: |
+          npm install -g serve
+          serve -s build -l 3000
